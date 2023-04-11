@@ -2,11 +2,11 @@
 
 ## BOSH Director 설치
 
-#### BOSH Director for vSphere
+### BOSH Director for vSphere
 
 ![](0019.png)
 
-- **vCenter Config**
+- ### vCenter Config
 
 ![](0020.png)
 
@@ -60,9 +60,7 @@
 
 ##### 모든 설정 입력 후 Save를 클릭합니다.
 
-
-
-- **Director Config**
+- ### Director Config
 
 ![](bosh1.png)
 
@@ -195,9 +193,7 @@
 
 ##### 모든 설정 입력 후 Save를 클릭합니다.
 
-
-
-- **Create Availability Zones**
+- ### Create Availability Zones
 
 ![](bosh5.png)
 
@@ -209,4 +205,105 @@ VMware는 선택한 런타임의 고가용성 설치를 위해 최소 3개의 AZ
 
 1. Add를 클릭하여 AZ 영역을 추가합니다.
 
-2. 
+2. **Name :** AZ의 고유한 이름을 설정합니다.
+
+3. **IaaS Configuration :** IaaS Configuration 드롭다운에서 vCenter 이름을 선택하여 AZ를 vCenter와 연결합니다. vCenter 구성이 하나만 있거나 첫 번째 AZ를 생성하는 경우 IaaS 구성은 기본적으로 첫 번째 vCenter로 설정되며 구성할 수 없습니다.
+
+4. **Cluster :** Ops Manager를 배포한 vCenter  클러스터의 이름을 입력합니다 . Ops Manager를 vSphere에 배포 단계 에서 이 클러스터를 설정했습니다.
+
+5. **Resource Pool :** Ops Manager를 vSphere에 배포 단계 에서 생성한 리소스 풀 의 이름을 입력하여 BOSH Director와 같은 관리 구성 요소를 구성합니다. AZ에서 실행 중인 작업은 풀에서 정의한 CPU 및 메모리 리소스를 공유합니다. 
+
+6. **Host Group :** (선택) 사용할 AZ에 대한 호스트 그룹의 이름을 입력합니다. 호스트 그룹은 클러스터 필드 에서 지정한 클러스터 내에 있어야 합니다.
+
+7. **VM-Host Affinity Rule :** (선택) SHOULD를 선택하면 AZ 장애 발생 시 vSphere가 다른 호스트 그룹의 VM을 다시 시작할 수 있습니다. 
+   
+   ※ *Note:  VM-Host Affinity Rule의 값은 호스트 그룹을 사용하는 경우에만 적용됩니다.*
+   
+   (선택)  Add Cluster를 클릭하여 설치 크기 및 고가용성 요구 사항에 따라 AZ에 더 많은 클러스터를 추가합니다.
+   
+   (선택) Add를 클릭하여 추가 AZ를 생성할 수 있습니다.
+
+##### 모든 설정 입력 후 Save를 클릭합니다.
+
+- ### Create Networks
+
+![](bosh6.png)
+
+![](bosh7.png)
+
+1. **Enable ICMP checks :** 네트워크에서 ICMP를 활성화하려면 Enable ICMP checks를 선택합니다. Ops Manager는 ICMP 검사를 사용하여 네트워크 내의 구성 요소에 연결할 수 있는지 확인합니다.
+
+2. **Add Network :** 다음 네트워크를 생성합니다.
+   
+   - `infrastructure`: 이 네트워크는 Ops Manager 및 BOSH Director를 위한 것입니다.
+   
+   - `pas`: 이 네트워크는 GoRouter, Diego Cell 및 Cloud Controller를 포함한 모든 TAS VM용 입니다.
+   
+   - `services`: 이 네트워크는 VM용 TAS와 함께 배포되는 모든 서비스 타일을 위한 것입니다.  
+     
+     각 네트워크를 생성할 때 다음 표의 값을 가이드로 사용하여 IP 주소를 vSphere 환경에서 사용 가능한 범위로 바꿉니다. 아래 표는 설정 예시 입니다.
+     
+     | 인프라 네트워크             | 필드                                 | 구성 예     |
+     | -------------------- | ---------------------------------- | -------- |
+     | Name                 | `infrastructure`                   |          |
+     | vSphere Network Name | `pcf-virt-net/infrastructure`      |          |
+     | CIDR                 | `192.168.101.0/24`                 |          |
+     | Reserved IP Ranges   | `192.168.101.1-192.168.101.9`      |          |
+     | DNS                  | `192.168.101.2`                    |          |
+     | Gateway              | `192.168.101.1`                    |          |
+     | **배포 네트워크**          | **필드**                             | **구성 예** |
+     | Name                 | `pas`                              |          |
+     | vSphere Network Name | `pcf-virt-net/pcf-pas-subnet`      |          |
+     | CIDR                 | `192.168.16.0/24`                  |          |
+     | Reserved IP Ranges   | `192.168.16.1-192.168.16.9`        |          |
+     | DNS                  | `192.168.16.2`                     |          |
+     | Gateway              | `192.168.16.1`                     |          |
+     | **서비스 네트워크**         | **필드**                             | **구성 예** |
+     | Name                 | `services`                         |          |
+     | vSphere Network Name | `pcf-virt-net/pcf-services-subnet` |          |
+     | CIDR                 | `192.168.20.0/24`                  |          |
+     | Reserved IP Ranges   | `192.168.20.1-192.168.20.9`        |          |
+     | DNS                  | `192.168.20.2`                     |          |
+     | Gateway              | `192.168.20.1`                     |          |
+     
+     - Reserved IP Ranges : 해당 영역의 IP에 VM을 설정하지 않습니다.
+
+3. **Availability Zones :** 생성한 각 네트워크에 대해 네트워크에서 사용할 가용 영역을 선택합니다. 배포에 필요한 만큼 네트워크에 AZ를 할당합니다. 
+
+##### 모든 설정 입력 후 Save를 클릭합니다.
+
+* ### Assign AZs and Networks
+
+![](bosh8.png)
+
+1. **Singleton Availability Zone :** 드롭다운 메뉴를 사용하여 Singleton AZ를 선택합니다. BOSH Director는 이 가용 영역에 단일 인스턴스로 설치됩니다.
+
+2. **Network :** 드롭다운 메뉴를 사용하여 BOSH Director에 대한 네트워크를 선택합니다.
+
+##### 모든 설정 입력 후 Save를 클릭합니다.
+
+- ### Security
+
+![](bosh9.png)
+
+1. **Trusted Certificates :** 사용자 지정 인증 기관(CA) 인증서를 입력합니다. 이 기능을 사용하면 배포의 모든 BOSH 배포 구성 요소가 사용자 지정 루트 인증서를 신뢰할 수 있습니다.
+
+2. **Include Tanzu Ops Manager Root CA in Trusted Certs :** Ops Manager 루트 CA를 포함하려면 Include Tanzu Ops Manager Root CA in Trusted Certs 확인란을 선택합니다 . BOSH Director는 배포하는 모든 VM의 신뢰 저장소에 이 CA를 포함합니다.
+
+3. **Clear the Default Trusted Certificates Store :** 모든 BOSH 배포 Linux VM에서 신뢰할 수 있는 기본 인증서를 지우려면 Clear the Default Trusted Certificates Store 확인란을 선택합니다. 사용 가능한 신뢰할 수 있는 인증서가 없으면 모든 TLS 통신이 실패하므로 이 확인란을 선택할 때 신뢰할 수 있는 인증서를 제공해야 합니다.
+
+4. **Generate VM passwords or use single password for all VMs :**  보안 강화를 위해 암호 생성 옵션을 사용하는 것이 좋습니다 .
+
+##### 모든 설정 입력 후 Save를 클릭합니다.
+
+- ### BOSH DNS Config
+
+![](bosh10.png)
+
+1. (선택)**Excluded Recursors :** BOSH DNS 서버에서 접속하지 않도록 URL 리디렉션인 재귀자 주소를 제외합니다.
+
+2. (선택)**Recursor Timeout :** BOSH DNS 서버가 연결된 모든 재귀 주소에 접속하기 위한 시간 초과를 지정합니다. 시간 제한에는 재귀에서 전화 걸기, 쓰기 및 읽기가 포함됩니다. 이러한 작업 중 하나라도 시간 제한을 초과하면 작업이 실패합니다.
+
+3. (선택)**Handlers :** 특정 도메인에 적용되는 재귀 주소를 지정합니다. 예를 들어 핸들러를 사용하여 도메인에 대한 모든 요청을 확인을 위해 프라이빗 DNS로 전달할 수 있습니다.
+
+##### 모든 설정 입력 후 Save를 클릭합니다.
