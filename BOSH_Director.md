@@ -308,9 +308,10 @@ VMware는 선택한 런타임의 고가용성 설치를 위해 최소 3개의 AZ
 
 ##### 모든 설정 입력 후 Save를 클릭합니다.
 
-
-
 - ### Syslog
+
+![](syslog01.png)
+
 1. (선택)**Do you want to configure Syslog for Bosh Director? :** Yes를 선택 시 BOSH Director 시스템 로그를 원격 서버로 보냅니다.
 
 2. **Address :** 원격 서버의 IP 주소 또는 DNS 이름을 입력합니다.
@@ -334,6 +335,11 @@ VMware는 선택한 런타임의 고가용성 설치를 위해 최소 3개의 AZ
 ##### 모든 설정 입력 후 Save를 클릭합니다.
 
 - ### Resource Config
+
+![](bosh12.png)
+
+![](bosh13.png)
+
 1. INSTANCES, VM TYPE, PERSISTENT DISK TYPE 필드 아래의 드롭다운 메뉴에서 Automatic을 선택하거나 환경에 맞는 리소스를 할당할 수 있습니다.
 
 2. PERSISTENT DISK TYPE 필드에 None 값이 표시되면 작업에 영구 디스크 공간이 필요하지 않은 것입니다.
